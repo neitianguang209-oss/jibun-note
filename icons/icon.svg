@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- じぶんノート アイコンの元絵: くすんだ青緑の地に、問いかけの吹き出しひとつ -->
+  <defs>
+    <radialGradient id="bg" cx="0.3" cy="0.2" r="1.1">
+      <stop offset="0" stop-color="#8FA7A0" />
+      <stop offset="1" stop-color="#5E7C76" />
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="22" /></filter>
+    <path id="bubble" d="M512 210c178 0 300 112 300 262s-122 262-300 262c-34 0-66-4-96-12l-128 86c-14 9-31-5-25-21l38-104c-56-48-89-116-89-211 0-150 122-262 300-262z" />
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)" />
+  <use href="#bubble" fill="#2E4541" opacity="0.35" filter="url(#shadow)" transform="translate(14 28)" />
+  <use href="#bubble" fill="#FBF6EC" />
+  <text x="512" y="560" text-anchor="middle" font-family="Yu Mincho, Hiragino Mincho ProN, serif" font-size="300" font-weight="600" fill="#5E7C76">？</text>
+</svg>

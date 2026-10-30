@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>じぶんノート</title>
+<meta name="theme-color" content="#F4F1EC">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="じぶんノート">
+<style>
+  :root {
+    --bg: #F4F1EC; --card: #FFFDF9; --ink: #34302B; --sub: #8A847B; --line: #E4DED4;
+    --accent: #4E6B66; --accent-soft: #E3EAE7;
+    --t-career: #5E7D8C; --t-love: #B67C7C; --t-life: #7D8A5C; --t-mood: #C0955A;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+    -webkit-text-size-adjust: 100%; }
+  body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg);
+    padding: calc(12px + env(safe-area-inset-top)) 16px 8px; }
+  header h1 { margin: 0; font-size: 20px; font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; letter-spacing: .05em; }
+  header .sub { font-size: 12px; color: var(--sub); margin-top: 2px; min-height: 1em; }
+  main { padding: 4px 16px 24px; max-width: 640px; margin: 0 auto; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding: 8px 0 4px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: none; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    border-radius: 999px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+  .chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin: 10px 0; }
+  .today { border: 1.5px solid var(--accent); background: var(--accent-soft); }
+  .today .label { font-size: 12px; color: var(--accent); font-weight: 600; }
+  .today .q { font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 19px; line-height: 1.6; margin: 6px 0 12px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  button { font: inherit; }
+  .btn { border: none; border-radius: 10px; padding: 10px 14px; font-size: 14px; cursor: pointer; background: var(--accent); color: #fff; }
+  .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  .btn.plain { background: transparent; color: var(--sub); padding: 10px 8px; }
+  .q-item { display: flex; gap: 10px; align-items: flex-start; padding: 12px 2px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .q-item:last-child { border-bottom: none; }
+  .q-item .text { flex: 1; line-height: 1.55; font-size: 15px; }
+  .q-item .meta { font-size: 11px; color: var(--sub); margin-top: 3px; }
+  .q-item .pin { color: var(--t-mood); font-size: 13px; }
+  .bar { width: 4px; align-self: stretch; border-radius: 2px; flex: none; }
+  .section-title { font-size: 13px; color: var(--sub); margin: 18px 2px 4px; font-weight: 600; }
+  .ins { padding: 10px 2px; border-bottom: 1px solid var(--line); }
+  .ins:last-child { border-bottom: none; }
+  .ins .s { line-height: 1.6; }
+  .ins .meta { font-size: 11px; color: var(--sub); margin-top: 3px; }
+  .conf { letter-spacing: 1px; color: var(--accent); font-size: 11px; }
+  .change { font-size: 13px; line-height: 1.6; }
+  .change .old { color: var(--sub); text-decoration: line-through; }
+  .change .arrow { color: var(--accent); margin: 0 4px; }
+  .talk h3 { margin: 4px 0 6px; font-size: 15px; }
+  .talk .summary { font-size: 14px; line-height: 1.7; }
+  .talk blockquote { margin: 8px 0 0; padding-left: 10px; border-left: 3px solid var(--line); color: #5b554d; font-size: 14px; }
+  .report { white-space: pre-wrap; font-size: 14px; line-height: 1.75; }
+  .empty { color: var(--sub); font-size: 14px; text-align: center; padding: 24px 8px; line-height: 1.7; }
+  nav { position: fixed; left: 0; right: 0; bottom: 0; display: flex; background: rgba(255,253,249,.96);
+    border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); z-index: 6; }
+  nav[hidden], .fab[hidden] { display: none; }
+  nav button { flex: 1; border: none; background: none; padding: 10px 0 12px; font-size: 12px; color: var(--sub); cursor: pointer; }
+  nav button b { display: block; font-size: 18px; font-weight: 400; line-height: 1.3; }
+  nav button.on { color: var(--accent); font-weight: 600; }
+  .fab { position: fixed; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom)); width: 52px; height: 52px; border-radius: 50%;
+    border: none; background: var(--ink); color: #fff; font-size: 26px; box-shadow: 0 4px 14px rgba(0,0,0,.18); cursor: pointer; z-index: 6; }
+  .overlay { position: fixed; inset: 0; background: rgba(40,36,30,.35); z-index: 10; display: flex; align-items: flex-start; justify-content: center;
+    padding: calc(16px + env(safe-area-inset-top)) 12px 12px; }
+  .sheet { background: var(--card); border-radius: 16px; width: 100%; max-width: 560px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.2); }
+  .sheet h2 { margin: 0 0 10px; font-size: 16px; }
+  textarea, input[type=text], input[type=password] { width: 100%; font: inherit; font-size: 16px; border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px; background: #fff; color: var(--ink); }
+  textarea { min-height: 84px; resize: vertical; line-height: 1.6; }
+  .sheet .chips { flex-wrap: wrap; }
+  .sheet-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 8px; }
+  .toast { position: fixed; left: 50%; bottom: calc(140px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+    background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 999px; font-size: 13px; z-index: 20; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .hint { font-size: 12px; color: var(--sub); line-height: 1.6; margin-top: 8px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>じぶんノート</h1>
+  <div class="sub" id="status"></div>
+</header>
+<main id="main"></main>
+<button class="fab" id="fab" aria-label="問いを足す" hidden>＋</button>
+<nav id="nav">
+  <button data-tab="questions" class="on"><b>？</b>問い</button>
+  <button data-tab="insights"><b>◎</b>気づき</button>
+  <button data-tab="talks"><b>≡</b>記録</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+const RPC_URL = 'https://gzayrjlhruhvklsidraw.supabase.co/rest/v1/rpc/jibun_api';
+const ANON = 'sb_publishable_-sNQxpwsU7JxhPF9S2vn5A_-CCTqQZL';
+const KEY_STORE = 'jibun-note:key';
+const CACHE_STORE = 'jibun-note:cache';
+const THEMES = [
+  { name: 'キャリア', color: 'var(--t-career)' },
+  { name: '恋愛・人間関係', color: 'var(--t-love)' },
+  { name: '人生観', color: 'var(--t-life)' },
+  { name: '日々の気持ち', color: 'var(--t-mood)' },
+];
+const themeColor = (t) => (THEMES.find((x) => x.name === t) || THEMES[2]).color;
+
+const state = { tab: 'questions', filter: 'すべて', data: null, offline: false };
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// 合言葉: 初回だけ #k=... 付きのリンクで開くと端末に保存される
+function takeKeyFromHash() {
+  const m = location.hash.match(/k=([^&]+)/);
+  if (m) { store.set(KEY_STORE, decodeURIComponent(m[1])); history.replaceState(null, '', location.pathname + location.search); }
+  return store.get(KEY_STORE);
+}
+
+async function api(action, args = {}) {
+  const key = store.get(KEY_STORE);
+  const res = await fetch(RPC_URL, {
+    method: 'POST',
+    headers: { apikey: ANON, Authorization: 'Bearer ' + ANON, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_key: key, p_action: action, p_args: args }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    const err = new Error(body.includes('bad key') ? 'bad key' : 'http ' + res.status);
+    throw err;
+  }
+  return res.json();
+}
+
+async function load() {
+  try {
+    const d = await api('load');
+    // クラウドが空で返ってきても手元の控えは消さない
+    if (d && (d.questions?.length || d.insights?.length || !state.data)) {
+      state.data = d; store.set(CACHE_STORE, JSON.stringify({ at: Date.now(), data: d }));
+    }
+    state.offline = false;
+    $('#status').textContent = '';
+  } catch (e) {
+    if (e.message === 'bad key') { store.set(KEY_STORE, ''); renderKeyScreen('合言葉が違うようです'); return; }
+    state.offline = true;
+    const c = JSON.parse(store.get(CACHE_STORE) || 'null');
+    if (c && !state.data) state.data = c.data;
+    $('#status').textContent = c ? 'つながらないので前回の内容を表示しています' : 'つながりません';
+  }
+  render();
+}
+
+function renderKeyScreen(msg) {
+  $('#nav').hidden = true; $('#fab').hidden = true;
+  $('#main').innerHTML = `
+    <div class="card">
+      <p style="margin:0 0 10px;line-height:1.7">${esc(msg || 'この端末で初めて開くときだけ、合言葉を入れてください。')}</p>
+      <input type="password" id="keyInput" placeholder="合言葉" autocomplete="off">
+      <div class="sheet-actions"><span></span><button class="btn" id="keyOk">開く</button></div>
+      <p class="hint">合言葉はパソコンのClaudeに「じぶんノートのリンクちょうだい」と言えば、入力不要のリンクでもらえます。</p>
+    </div>`;
+  $('#keyOk').onclick = () => {
+    const v = $('#keyInput').value.trim(); if (!v) return;
+    store.set(KEY_STORE, v); $('#nav').hidden = false; load();
+  };
+}
+
+function render() {
+  const d = state.data;
+  $('#nav').hidden = false;
+  document.querySelectorAll('#nav button').forEach((b) => b.classList.toggle('on', b.dataset.tab === state.tab));
+  $('#fab').hidden = state.tab !== 'questions';
+  if (!d) { $('#main').innerHTML = '<div class="empty">読み込み中…</div>'; return; }
+  const filters = `<div class="chips">${['すべて', ...THEMES.map((t) => t.name)].map((n) =>
+    `<button class="chip ${state.filter === n ? 'on' : ''}" data-filter="${esc(n)}">${n === 'すべて' ? '' : `<span class="dot" style="background:${themeColor(n)}"></span>`}${esc(n)}</button>`).join('')}</div>`;
+  const body = state.tab === 'questions' ? renderQuestions(d) : state.tab === 'insights' ? renderInsights(d) : renderTalks(d);
+  $('#main').innerHTML = filters + body;
+  document.querySelectorAll('[data-filter]').forEach((b) => b.onclick = () => { state.filter = b.dataset.filter; render(); });
+  bindQuestionEvents();
+}
+
+const inFilter = (theme) => state.filter === 'すべて' || state.filter === theme;
+
+function claudePrompt(q) {
+  return `今日の問い「${q.question}」(テーマ:${q.theme})について話そう。自分を知るトークで、聞き役として1つずつ深掘りして。終わったら保存して。`;
+}
+
+function renderQuestions(d) {
+  const today = d.questions.find((q) => q.status === '今日');
+  const list = d.questions.filter((q) => q.status !== '今日' && q.status !== '決着' && inFilter(q.theme));
+  const done = d.questions.filter((q) => q.status === '決着' && inFilter(q.theme));
+  let h = '';
+  if (today) {
+    h += `<div class="card today">
+      <div class="label"><span class="dot" style="background:${themeColor(today.theme)}"></span>今日の問い ・ ${esc(today.theme)}</div>
+      <div class="q">${esc(today.question)}</div>
+      <div class="row">
+        <button class="btn" data-talk="${today.id}">Claudeと話す</button>
+        <button class="btn ghost" data-copy="${today.id}">文をコピー</button>
+        <button class="btn plain" data-unpick="${today.id}">やめる</button>
+      </div>
+      <p class="hint">Claudeのアプリで「今日の問いで話そう」と言うだけでも、この問いから始まります。</p>
+    </div>`;
+  } else {
+    h += `<p class="hint" style="margin:6px 2px 0">話したい問いをタップして「今日はこれ」にすると、Claudeがその問いから始めます。</p>`;
+  }
+  h += `<div class="card" style="padding:4px 12px">`;
+  h += list.length ? list.map(qItem).join('') : `<div class="empty">この分類の問いはまだありません。右下の＋で足せます。</div>`;
+  h += `</div>`;
+  if (done.length) h += `<div class="section-title">答えが出た問い</div><div class="card" style="padding:4px 12px">${done.map(qItem).join('')}</div>`;
+  return h;
+}
+
+function qItem(q) {
+  const meta = [q.times_talked ? `${q.times_talked}回話した` : 'まだ話していない', q.last_talked ? `最後 ${q.last_talked.slice(5).replace('-', '/')}` : '', q.source === '前のトークの宿題' ? '前のトークの宿題' : ''].filter(Boolean).join(' ・ ');
+  return `<div class="q-item" data-q="${q.id}">
+    <span class="bar" style="background:${themeColor(q.theme)}"></span>
+    <div class="text">${q.pinned ? '<span class="pin">★ </span>' : ''}${esc(q.question)}<div class="meta">${esc(q.theme)} ・ ${esc(meta)}</div></div>
+  </div>`;
+}
+
+const KIND_ORDER = ['一言の自分', '価値観', '幸福観', '強み', '弱み', '動き方のクセ', '感情のクセ', 'やりたいこと', '避けたいこと', '企業選びの軸', '働き方の条件', 'キャリア仮説', '恋愛観', '人との関わり方', '問い'];
+
+function renderInsights(d) {
+  const all = d.insights.filter((i) => inFilter(i.theme));
+  const now = all.filter((i) => i.status === '今の考え' || i.status === '未解決');
+  const changed = all.filter((i) => i.status === '変化した').slice(0, 12);
+  const byId = Object.fromEntries(d.insights.map((i) => [i.id, i]));
+  if (!all.length) return `<div class="empty">まだ気づきがありません。<br>Claudeと話して「保存して」と言うと、ここに貯まります。</div>`;
+  let h = '';
+  if (changed.length) {
+    h += `<div class="section-title">変わったこと</div><div class="card">`;
+    h += changed.map((o) => {
+      const n = byId[o.replaced_by];
+      return `<div class="ins change"><span class="old">${esc(o.statement)}</span><span class="arrow">→</span>${esc(n ? n.statement : '(新しい考え)')}
+        ${o.change_note ? `<div class="meta">きっかけ: ${esc(o.change_note)}</div>` : ''}<div class="meta">${esc(o.theme)} ・ ${esc((o.updated_at || '').slice(0, 10))}</div></div>`;
+    }).join('');
+    h += `</div>`;
+  }
+  const groups = {};
+  now.forEach((i) => (groups[i.kind] = groups[i.kind] || []).push(i));
+  const kinds = Object.keys(groups).sort((a, b) => (KIND_ORDER.indexOf(a) + 99) % 99 - (KIND_ORDER.indexOf(b) + 99) % 99 || a.localeCompare(b));
+  for (const k of kinds) {
+    h += `<div class="section-title">${esc(k)}</div><div class="card">`;
+    h += groups[k].map((i) => `<div class="ins">
+      <div class="s"><span class="dot" style="background:${themeColor(i.theme)}"></span>${esc(i.statement)}</div>
+      <div class="meta"><span class="conf">${'●'.repeat(i.confidence || 1)}${'○'.repeat(3 - (i.confidence || 1))}</span> ・ ${i.first_seen ? esc(i.first_seen.slice(0, 7).replace('-', '年')) + '月から' : ''}${i.last_confirmed && i.last_confirmed !== i.first_seen ? ` ・ 最後に確認 ${esc(i.last_confirmed.slice(5).replace('-', '/'))}` : ''}</div>
+    </div>`).join('');
+    h += `</div>`;
+  }
+  return h;
+}
+
+function renderTalks(d) {
+  const talks = d.talks.filter((t) => inFilter(t.theme));
+  let h = '';
+  if (d.reports.length && state.filter === 'すべて') {
+    const r = d.reports[0];
+    h += `<div class="section-title">今週の変化レポート(${esc(r.period_start.slice(5).replace('-', '/'))}〜${esc(r.period_end.slice(5).replace('-', '/'))})</div>
+      <div class="card report">${esc(r.body)}</div>`;
+  }
+  h += `<div class="section-title">話した記録</div>`;
+  if (!talks.length) return h + `<div class="empty">まだ記録がありません。</div>`;
+  h += talks.map((t) => `<div class="card talk">
+    <div class="meta" style="font-size:12px;color:var(--sub)"><span class="dot" style="background:${themeColor(t.theme)}"></span>${esc(t.talked_on.slice(5).replace('-', '/'))} ・ ${esc(t.theme)}</div>
+    <h3>${esc(t.title)}</h3>
+    <div class="summary">${esc(t.summary)}</div>
+    ${(t.quotes || []).slice(0, 2).map((q) => `<blockquote>「${esc(q)}」</blockquote>`).join('')}
+    ${t.next_question ? `<p class="hint">次に話したい: ${esc(t.next_question)}</p>` : ''}
+  </div>`).join('');
+  return h;
+}
+
+function findQ(id) { return state.data.questions.find((q) => q.id === id); }
+
+function bindQuestionEvents() {
+  document.querySelectorAll('[data-q]').forEach((el) => el.onclick = () => openQuestionSheet(findQ(el.dataset.q)));
+  document.querySelectorAll('[data-talk]').forEach((el) => el.onclick = () => talkWithClaude(findQ(el.dataset.talk)));
+  document.querySelectorAll('[data-copy]').forEach((el) => el.onclick = async () => {
+    try { await navigator.clipboard.writeText(claudePrompt(findQ(el.dataset.copy))); toast('コピーしました'); } catch { toast('コピーできませんでした'); }
+  });
+  document.querySelectorAll('[data-unpick]').forEach((el) => el.onclick = () => updateQ(findQ(el.dataset.unpick), { status: findQ(el.dataset.unpick).times_talked ? '話した' : 'ストック' }, '戻しました'));
+}
+
+async function talkWithClaude(q) {
+  const text = claudePrompt(q);
+  try { await navigator.clipboard.writeText(text); } catch {}
+  window.open('https://claude.ai/new?q=' + encodeURIComponent(text), '_blank');
+}
+
+async function updateQ(q, patch, msg) {
+  if (state.offline) { toast('つながっていないので変更できません'); return; }
+  try {
+    const r = await api('update_question', { id: q.id, ...patch });
+    if (r && r.status === '今日') state.data.questions.forEach((x) => { if (x.status === '今日' && x.id !== r.id) x.status = x.times_talked ? '話した' : 'ストック'; });
+    Object.assign(q, r);
+    store.set(CACHE_STORE, JSON.stringify({ at: Date.now(), data: state.data }));
+    closeSheet(); render(); if (msg) toast(msg);
+    if (r && r.status === '今日') window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch { toast('保存できませんでした'); }
+}
+
+function themeChips(selected) {
+  return `<div class="chips">${THEMES.map((t) => `<button type="button" class="chip ${selected === t.name ? 'on' : ''}" data-theme="${esc(t.name)}"><span class="dot" style="background:${t.color}"></span>${esc(t.name)}</button>`).join('')}</div>`;
+}
+
+function openSheet(inner) {
+  closeSheet();
+  const ov = document.createElement('div');
+  ov.className = 'overlay'; ov.id = 'overlay';
+  ov.innerHTML = `<div class="sheet">${inner}</div>`;
+  ov.addEventListener('click', (e) => { if (e.target === ov) closeSheet(); });
+  document.body.appendChild(ov);
+  let theme = ov.querySelector('.chip.on')?.dataset.theme;
+  ov.querySelectorAll('[data-theme]').forEach((b) => b.onclick = () => {
+    theme = b.dataset.theme; ov.querySelectorAll('[data-theme]').forEach((x) => x.classList.toggle('on', x === b));
+  });
+  return { ov, getTheme: () => theme };
+}
+function closeSheet() { $('#overlay')?.remove(); }
+
+function openQuestionSheet(q) {
+  const { ov, getTheme } = openSheet(`
+    <h2>問い</h2>
+    <textarea id="qText">${esc(q.question)}</textarea>
+    ${themeChips(q.theme)}
+    <div class="row" style="margin-top:12px">
+      <button class="btn" id="qPick">今日はこれ</button>
+      <button class="btn ghost" id="qPin">${q.pinned ? '★をはずす' : '★ 気になる'}</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn plain" id="qArchive">${q.status === '決着' ? 'ストックに戻す' : 'しまう'}</button>
+      <span><button class="btn plain" id="qClose">閉じる</button><button class="btn ghost" id="qSave">保存</button></span>
+    </div>`);
+  const edited = () => {
+    const p = {}; const t = ov.querySelector('#qText').value.trim();
+    if (t && t !== q.question) p.question = t;
+    if (getTheme() !== q.theme) p.theme = getTheme();
+    return p;
+  };
+  ov.querySelector('#qPick').onclick = () => updateQ(q, { ...edited(), status: '今日' }, '今日の問いにしました');
+  ov.querySelector('#qPin').onclick = () => updateQ(q, { ...edited(), pinned: !q.pinned });
+  ov.querySelector('#qSave').onclick = () => { const p = edited(); Object.keys(p).length ? updateQ(q, p, '保存しました') : closeSheet(); };
+  ov.querySelector('#qClose').onclick = closeSheet;
+  ov.querySelector('#qArchive').onclick = async () => {
+    if (q.status === '決着') return updateQ(q, { status: 'ストック' }, 'ストックに戻しました');
+    await updateQ(q, { status: 'しまう' }, 'しまいました');
+    state.data.questions = state.data.questions.filter((x) => x.id !== q.id); render();
+  };
+}
+
+function openAddSheet() {
+  const { ov, getTheme } = openSheet(`
+    <h2>問いを足す</h2>
+    <textarea id="newQ" placeholder="例: 最近いちばん悔しかったことは?"></textarea>
+    ${themeChips(state.filter !== 'すべて' ? state.filter : '人生観')}
+    <div class="sheet-actions"><button class="btn plain" id="addClose">閉じる</button><button class="btn" id="addOk">足す</button></div>
+    <p class="hint">Claudeと話しているときに「この問い足しといて」と言っても入ります。</p>`);
+  setTimeout(() => ov.querySelector('#newQ').focus(), 50);
+  ov.querySelector('#addClose').onclick = closeSheet;
+  ov.querySelector('#addOk').onclick = async () => {
+    const text = ov.querySelector('#newQ').value.trim(); if (!text) return;
+    if (state.offline) { toast('つながっていないので足せません'); return; }
+    try {
+      const r = await api('add_question', { question: text, theme: getTheme() });
+      state.data.questions.unshift(r); closeSheet(); render(); toast('足しました');
+    } catch { toast('保存できませんでした'); }
+  };
+}
+
+document.querySelectorAll('#nav button').forEach((b) => b.onclick = () => { state.tab = b.dataset.tab; render(); window.scrollTo(0, 0); });
+$('#fab').onclick = openAddSheet;
+window.addEventListener('hashchange', () => { if (/k=/.test(location.hash) && takeKeyFromHash()) load(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && store.get(KEY_STORE)) load(); });
+
+if (takeKeyFromHash()) {
+  const c = JSON.parse(store.get(CACHE_STORE) || 'null');
+  if (c) state.data = c.data;
+  render(); load();
+} else {
+  renderKeyScreen();
+}
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
