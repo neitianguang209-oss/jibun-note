@@ -1,7 +1,7 @@
 // Service Worker テンプレート（ビルド不要・手書き）
 // 使い方: APP_SHELLの一覧を実際のプロジェクトのファイル構成に合わせて書き換える。
 // 全パスは相対（先頭に/を付けない）。GitHub Pagesのようなサブパス配信でも壊れないようにするため。
-const CACHE_NAME = 'jibun-note-v1'; // 更新のたびに上げる。以後アプリを更新してデプロイするたび、内容を問わず毎回vを上げる。
+const CACHE_NAME = 'jibun-note-v2'; // 更新のたびに上げる。以後アプリを更新してデプロイするたび、内容を問わず毎回vを上げる。
 // 上げないとブラウザがsw.js自体の変更を検知できず、古いキャッシュを配信し続ける(details: references/pwa-and-deploy.md)
 const APP_SHELL = [
   './',
